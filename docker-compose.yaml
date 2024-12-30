@@ -1,0 +1,41 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"  # Enable dashboard
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--experimental.plugins.myheaderplugin.modulename=github.com/yourusername/my-header-plugin"
+      - "--experimental.plugins.myheaderplugin.version=v1.0.0"
+    ports:
+      - "80:80"     # HTTP
+      - "8080:8080" # Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  whoami:
+    image: traefik/whoami
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+      # Enable your custom plugin
+      - "traefik.http.middlewares.myheader.plugin.myheaderplugin.headerToRead=X-Test-Header"
+      # Apply the middleware to the router
+      - "traefik.http.routers.whoami.middlewares=myheader@docker"
+
+networks:
+  default:
+    name: traefik_network
+
+---
+# Optional: Dynamic configuration file (traefik_dynamic.yml)
+http:
+  middlewares:
+    myheader:
+      plugin:
+        myheaderplugin:
+          headerToRead: "X-Test-Header"

@@ -1,0 +1,7 @@
+displayName: traefik-typetale-middleware
+type: middleware
+import: github.com/tilak999/traefik-typetale-middleware
+summary: traefik middleware for typetale
+testData:
+  headerName: X-Test-Header
+  headerValue: Test
